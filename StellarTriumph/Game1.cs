@@ -19,6 +19,8 @@ public class Game1 : Game
     private Rectangle[] _sourceRectangles;
     private int[] _translations;
     private const int SpriteDimension = 61;
+    private const int CircleDegrees = 360;
+    private const int AngleIncrement = 15;
     private float _timer;
     private int _threshold;
 
@@ -60,11 +62,11 @@ public class Game1 : Game
 
                 if (sourceRectangleCount < 6)
                 {
-                    _translations[sourceRectangleCount] = 90 - (15 * sourceRectangleCount);
+                    _translations[sourceRectangleCount] = 90 - (AngleIncrement * sourceRectangleCount);
                 }
                 else
                 {
-                    _translations[sourceRectangleCount] = 360 - (sourceRectangleCount - 6) * 15;
+                    _translations[sourceRectangleCount] = CircleDegrees - (sourceRectangleCount - 6) * AngleIncrement;
                 }
                 sourceRectangleCount++;
             
@@ -98,7 +100,7 @@ public class Game1 : Game
         }
         else if (Keyboard.GetState().IsKeyDown(Keys.Up))
         {
-            Console.WriteLine(_translations[_currentAnimationIndex]);
+            // Console.WriteLine(_translations[_currentAnimationIndex]);
             double radians = (Math.PI / 180.0) * _translations[_currentAnimationIndex];
             float _posXDelta = (float)Math.Cos(radians);
             float _posYDelta = (float)Math.Sin(radians);
