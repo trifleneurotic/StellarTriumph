@@ -5,8 +5,10 @@ using System;
 
 namespace StellarTriumph;
 
+
 public class Game1 : Game
 {
+
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private Texture2D _image;
@@ -15,7 +17,7 @@ public class Game1 : Game
     private ushort _currentAnimationIndex;
 
     private Rectangle[] _sourceRectangles;
-
+    private int[] _translations;
     private const int SpriteDimension = 61;
     private float _timer;
     private int _threshold;
@@ -47,6 +49,7 @@ public class Game1 : Game
 
         int sourceRectangleCount = 0;
         _sourceRectangles = new Rectangle[24];
+        _translations = new int[24];
         _previousAnimationIndex = 0;
 
         for(int y = 0; y < (SpriteDimension * 4); y += SpriteDimension)
@@ -54,7 +57,17 @@ public class Game1 : Game
             for(int x = 0; x < (SpriteDimension * 6); x += SpriteDimension)
             {
                 _sourceRectangles[sourceRectangleCount] = new Rectangle(x, y, SpriteDimension, SpriteDimension);
+
+                if (sourceRectangleCount < 6)
+                {
+                    _translations[sourceRectangleCount] = 90 - (15 * sourceRectangleCount);
+                }
+                else
+                {
+                    _translations[sourceRectangleCount] = 360 - (sourceRectangleCount - 6) * 15;
+                }
                 sourceRectangleCount++;
+            
             }
         }
     }
@@ -74,7 +87,9 @@ public class Game1 : Game
             {
                 _currentAnimationIndex = (ushort)((_previousAnimationIndex - 1) % 23);  
             }
-            _previousAnimationIndex = _currentAnimationIndex;  
+            _previousAnimationIndex = _currentAnimationIndex;
+            
+            
         }
         else if (Keyboard.GetState().IsKeyDown(Keys.Right))
         {
@@ -83,11 +98,12 @@ public class Game1 : Game
         }
         else if (Keyboard.GetState().IsKeyDown(Keys.Up))
         {
-            double radians = (Math.PI / 180) * (360 / (_currentAnimationIndex + 1));
+            Console.WriteLine(_translations[_currentAnimationIndex]);
+            double radians = (Math.PI / 180.0) * _translations[_currentAnimationIndex];
             float _posXDelta = (float)Math.Cos(radians);
             float _posYDelta = (float)Math.Sin(radians);
             _posX += _posXDelta;
-            _posY += _posYDelta;
+            _posY += (_posYDelta * -1);
         }
         else
         {
