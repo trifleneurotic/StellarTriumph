@@ -12,12 +12,16 @@ public class Game1 : Game
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private Texture2D _image;
+    private Texture2D _star;
+    private bool _starfieldInitialized = false;
 
     private ushort _previousAnimationIndex;
     private ushort _currentAnimationIndex;
 
     private Rectangle[] _sourceRectangles;
     private int[] _translations;
+    private int[] _starX;
+    private int[] _starY;  
     private const int SpriteDimension = 61;
     private const int CircleDegrees = 360;
     private const int AngleIncrement = 15;
@@ -39,11 +43,17 @@ public class Game1 : Game
         // TODO: Add your initialization logic here
 
         base.Initialize();
+        _starX = new int[150];
+        _starY = new int[150];
     }
 
     protected override void LoadContent()
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+        Console.WriteLine(GraphicsDevice.Viewport.Width);
+        Console.WriteLine(GraphicsDevice.Viewport.Height);
+
 
         _image = Content.Load<Texture2D>("ship_red");
         _timer = 0;
@@ -54,9 +64,9 @@ public class Game1 : Game
         _translations = new int[24];
         _previousAnimationIndex = 0;
 
-        for(int y = 0; y < (SpriteDimension * 4); y += SpriteDimension)
+        for (int y = 0; y < (SpriteDimension * 4); y += SpriteDimension)
         {
-            for(int x = 0; x < (SpriteDimension * 6); x += SpriteDimension)
+            for (int x = 0; x < (SpriteDimension * 6); x += SpriteDimension)
             {
                 _sourceRectangles[sourceRectangleCount] = new Rectangle(x, y, SpriteDimension, SpriteDimension);
 
@@ -69,9 +79,12 @@ public class Game1 : Game
                     _translations[sourceRectangleCount] = CircleDegrees - (sourceRectangleCount - 6) * AngleIncrement;
                 }
                 sourceRectangleCount++;
-            
+
             }
         }
+
+        _star = new Texture2D(GraphicsDevice, 1, 1);
+        _star.SetData(new[] { Color.White });
     }
 
     protected override void Update(GameTime gameTime)
@@ -129,15 +142,35 @@ public class Game1 : Game
 
     protected override void Draw(GameTime gameTime)
     {
-        GraphicsDevice.Clear(Color.CornflowerBlue);
-
+        GraphicsDevice.Clear(Color.Black);
         _spriteBatch.Begin();
+
+        if (!_starfieldInitialized)
+        {
+
+            for (int i = 0; i < 150; i++)
+            {
+                int x = (new Random()).Next(0, GraphicsDevice.Viewport.Width);
+                int y = (new Random()).Next(0, GraphicsDevice.Viewport.Height);
+                _starX[i] = x;
+                _starY[i] = y;
+                _spriteBatch.Draw(_star, new Vector2(x, y), Color.White);
+            }
+            _starfieldInitialized = true;
+        }
+        else
+        {
+            for (int i = 0; i < 150; i++)
+            {
+                _spriteBatch.Draw(_star, new Vector2(_starX[i], _starY[i]), Color.White);
+            }
+        }
 
         Rectangle sourceRectangle = new Rectangle(0, 0, 61, 61);
 
         // _spriteBatch.Draw(_image, new Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
         // _spriteBatch.Draw(_image, new Vector2(300, 100), sourceRectangle, Color.White);
-        _spriteBatch.Draw(_image, new Vector2(_posX, _posY), _sourceRectangles[_currentAnimationIndex], Color.White);
+        _spriteBatch.Draw(_image, new Vector2(_posX, _posY), _sourceRectangles[_currentAnimationIndex], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
 
         _spriteBatch.End();
 
