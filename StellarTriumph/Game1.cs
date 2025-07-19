@@ -138,7 +138,12 @@ public class Game1 : Game
             _posX += _posXDelta;
             _posY += (_posYDelta * -1);
         }
-        else if (Keyboard.GetState().IsKeyDown(Keys.Space))
+        else
+        {
+            _timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+        }
+
+        if (Keyboard.GetState().IsKeyDown(Keys.Space))
         {
             if (_shotFired) return;
             
@@ -148,10 +153,6 @@ public class Game1 : Game
             _shotY = _posY + SpriteDimension / 2;
             
             Console.WriteLine($"Shot fired at angle {_translations[_currentAnimationIndex]} degrees");
-        }
-        else
-        {
-            _timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
         }
 
         /* if (_timer > _threshold)
