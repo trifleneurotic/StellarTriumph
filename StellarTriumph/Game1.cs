@@ -13,6 +13,8 @@ public class Game1 : Game
     private SpriteBatch _spriteBatch;
     private Texture2D _image;
     private Texture2D _star;
+    private Texture2D _shot;
+    private double _rotation;
     private bool _starfieldInitialized = false;
 
     private ushort _previousAnimationIndex;
@@ -21,7 +23,12 @@ public class Game1 : Game
     private Rectangle[] _sourceRectangles;
     private int[] _translations;
     private int[] _starX;
-    private int[] _starY;  
+    private int[] _starY;
+    private float _shotX;
+    private float _shotY;
+    private float _shotXDelta;
+    private float _shotYDelta;
+    private bool _shotFired = false;
     private const int SpriteDimension = 61;
     private const int CircleDegrees = 360;
     private const int AngleIncrement = 15;
@@ -85,13 +92,24 @@ public class Game1 : Game
 
         _star = new Texture2D(GraphicsDevice, 1, 1);
         _star.SetData(new[] { Color.White });
+        _shot = new Texture2D(GraphicsDevice, 8, 8);
+        _shot.SetData(new[] { Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
+                             Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
+                             Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
+                             Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
+                             Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
+                             Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
+                             Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,Color.Red ,Color.Red,
+                             Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red});
     }
+    
 
     protected override void Update(GameTime gameTime)
     {
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
-        
+
+
         if (Keyboard.GetState().IsKeyDown(Keys.Left))
         {
             if (_previousAnimationIndex == 0)
@@ -100,11 +118,11 @@ public class Game1 : Game
             }
             else
             {
-                _currentAnimationIndex = (ushort)((_previousAnimationIndex - 1) % 23);  
+                _currentAnimationIndex = (ushort)((_previousAnimationIndex - 1) % 23);
             }
             _previousAnimationIndex = _currentAnimationIndex;
-            
-            
+
+
         }
         else if (Keyboard.GetState().IsKeyDown(Keys.Right))
         {
@@ -119,6 +137,17 @@ public class Game1 : Game
             float _posYDelta = (float)Math.Sin(radians);
             _posX += _posXDelta;
             _posY += (_posYDelta * -1);
+        }
+        else if (Keyboard.GetState().IsKeyDown(Keys.Space))
+        {
+            if (_shotFired) return;
+            
+            _shotFired = true;
+            _rotation = (Math.PI / 180.0) * _translations[_currentAnimationIndex];
+            _shotX = _posX + SpriteDimension / 2;
+            _shotY = _posY + SpriteDimension / 2;
+            
+            Console.WriteLine($"Shot fired at angle {_translations[_currentAnimationIndex]} degrees");
         }
         else
         {
@@ -144,6 +173,24 @@ public class Game1 : Game
     {
         GraphicsDevice.Clear(Color.Black);
         _spriteBatch.Begin();
+
+        
+
+        if (_shotFired)
+        {
+            _shotXDelta = (float)Math.Cos(_rotation) * 10;
+            _shotYDelta = (float)Math.Sin(_rotation) * -10;
+            _shotX += _shotXDelta;
+            _shotY += _shotYDelta;
+            _spriteBatch.Draw(_shot, new Vector2(_shotX, _shotY), Color.Red);
+
+            if (_shotX < 0 || _shotX > GraphicsDevice.Viewport.Width || _shotY < 0 || _shotY > GraphicsDevice.Viewport.Height)
+            {
+                _shotFired = false;
+                _shotX = 0;
+                _shotY = 0;
+            }
+        }
 
         if (!_starfieldInitialized)
         {
@@ -171,7 +218,7 @@ public class Game1 : Game
         // _spriteBatch.Draw(_image, new Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
         // _spriteBatch.Draw(_image, new Vector2(300, 100), sourceRectangle, Color.White);
         _spriteBatch.Draw(_image, new Vector2(_posX, _posY), _sourceRectangles[_currentAnimationIndex], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
-
+        Console.WriteLine($"Drawing ship at angle {_translations[_currentAnimationIndex]} degrees at position {_posX},{_posY} with source rectangle {_sourceRectangles[_currentAnimationIndex]}");
         _spriteBatch.End();
 
         base.Draw(gameTime);
