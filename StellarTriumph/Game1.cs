@@ -14,8 +14,13 @@ public class Game1 : Game
     private Texture2D _image;
     private Texture2D _star;
     private Texture2D _shot;
+    private Texture2D _monolithLeft;
+    private Texture2D _monolithRight;
+    private Texture2D _monolithTop;
+    private Texture2D _monolithBottom;
     private double _rotation;
     private bool _starfieldInitialized = false;
+    private bool _monolithHit = false;
 
     private ushort _previousAnimationIndex;
     private ushort _currentAnimationIndex;
@@ -28,6 +33,8 @@ public class Game1 : Game
     private float _shotY;
     private float _shotXDelta;
     private float _shotYDelta;
+    private int _xCoefficient = 1;
+    private int _yCoefficient = 1;
     private bool _shotFired = false;
     private const int SpriteDimension = 61;
     private const int CircleDegrees = 360;
@@ -43,6 +50,7 @@ public class Game1 : Game
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
+
     }
 
     protected override void Initialize()
@@ -101,6 +109,24 @@ public class Game1 : Game
                              Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
                              Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,Color.Red ,Color.Red,
                              Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red});
+        _monolithTop = new Texture2D(GraphicsDevice, 160, 2);
+        _monolithBottom = new Texture2D(GraphicsDevice, 160, 2);
+        _monolithLeft = new Texture2D(GraphicsDevice, 2, 16);
+        _monolithRight = new Texture2D(GraphicsDevice, 2, 16);
+        Color[] monolithColorData = new Color[160 * 2];
+        for (int i = 0; i < monolithColorData.Length; i++)
+        {
+            monolithColorData[i] = Color.Gray;
+        }
+        _monolithTop.SetData(monolithColorData);
+        _monolithBottom.SetData(monolithColorData);
+        Color[] monolithSideColorData = new Color[2 * 16];
+        for (int i = 0; i < monolithSideColorData.Length; i++)
+        {
+            monolithSideColorData[i] = Color.Gray;
+        }
+        _monolithLeft.SetData(monolithSideColorData);
+        _monolithRight.SetData(monolithSideColorData);
     }
     
 
@@ -175,23 +201,49 @@ public class Game1 : Game
         GraphicsDevice.Clear(Color.Black);
         _spriteBatch.Begin();
 
-        
 
+        _spriteBatch.Draw(_monolithTop, new Rectangle(300, 300, 280, 1), Color.Gray);
+        _spriteBatch.Draw(_monolithBottom, new Rectangle(300, 300 + 24, 280, 1), Color.Gray);
+        _spriteBatch.Draw(_monolithLeft, new Rectangle(300, 300, 1, 24), Color.Gray);
+        _spriteBatch.Draw(_monolithRight, new Rectangle(300 + 280, 300, 1, 24), Color.Gray);
+        
         if (_shotFired)
         {
-            _shotXDelta = (float)Math.Cos(_rotation) * 10;
-            _shotYDelta = (float)Math.Sin(_rotation) * -10;
+            _shotXDelta = (float)Math.Cos(_rotation) * 10 * _xCoefficient;
+            _shotYDelta = (float)Math.Sin(_rotation) * -10 * _yCoefficient;
+
             _shotX += _shotXDelta;
             _shotY += _shotYDelta;
+            
+             Rectangle monolithRect = new Rectangle(300, 300, 280, 24);
+            Rectangle shotRect = new Rectangle((int)_shotX, (int)_shotY, 8, 8);
+
+            if (shotRect.Intersects(monolithRect))
+            {
+                if (shotRect.Intersects(new Rectangle(300, 300, 280, 1)) || shotRect.Intersects(new Rectangle(300, 300 + 24, 280, 1)))
+                {
+                    _yCoefficient *= -1;
+                }
+                if (shotRect.Intersects(new Rectangle(300, 300, 1, 24)) || shotRect.Intersects(new Rectangle(300 + 280, 300, 1, 24)))
+                {
+                    _xCoefficient *= -1;
+                }
+            }
+
             _spriteBatch.Draw(_shot, new Vector2(_shotX, _shotY), Color.Red);
 
             if (_shotX < 0 || _shotX > GraphicsDevice.Viewport.Width || _shotY < 0 || _shotY > GraphicsDevice.Viewport.Height)
             {
                 _shotFired = false;
+                _monolithHit = false;
                 _shotX = 0;
                 _shotY = 0;
+                _xCoefficient = 1;
+                _yCoefficient = 1;
             }
         }
+
+    
 
         if (!_starfieldInitialized)
         {
