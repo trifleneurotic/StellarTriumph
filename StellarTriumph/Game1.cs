@@ -6,12 +6,13 @@ using System;
 namespace StellarTriumph;
 
 
-public class Game1 : Game
+public class STMain : Game
 {
 
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
-    private Texture2D _image;
+    private Texture2D _redShip;
+    private Texture2D _blueShip;
     private Texture2D _star;
     private Texture2D _shot;
     private Texture2D _monolithLeft;
@@ -42,10 +43,12 @@ public class Game1 : Game
     private float _timer;
     private int _threshold;
 
-    private float _posX = 100.0f;
-    private float _posY = 100.0f;
+    private float _redPosX = 100.0f;
+    private float _redPosY = 100.0f;
+    private float _bluePosX = 500.0f;
+    private float _bluePosY = 100.0f;
 
-    public Game1()
+    public STMain()
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
@@ -70,7 +73,8 @@ public class Game1 : Game
         Console.WriteLine(GraphicsDevice.Viewport.Height);
 
 
-        _image = Content.Load<Texture2D>("ship_red");
+        _redShip = Content.Load<Texture2D>("ship_red");
+        _blueShip = Content.Load<Texture2D>("ship_blue");
         _timer = 0;
         _threshold = 250;
 
@@ -161,8 +165,8 @@ public class Game1 : Game
             double radians = (Math.PI / 180.0) * _translations[_currentAnimationIndex];
             float _posXDelta = (float)Math.Cos(radians);
             float _posYDelta = (float)Math.Sin(radians);
-            _posX += _posXDelta;
-            _posY += (_posYDelta * -1);
+            _redPosX += _posXDelta;
+            _redPosY += (_posYDelta * -1);
         }
         else
         {
@@ -175,8 +179,8 @@ public class Game1 : Game
             
             _shotFired = true;
             _rotation = (Math.PI / 180.0) * _translations[_currentAnimationIndex];
-            _shotX = _posX + SpriteDimension / 2;
-            _shotY = _posY + SpriteDimension / 2;
+            _shotX = _redPosX + SpriteDimension / 2;
+            _shotY = _redPosY + SpriteDimension / 2;
             
             Console.WriteLine($"Shot fired at angle {_translations[_currentAnimationIndex]} degrees");
         }
@@ -215,7 +219,7 @@ public class Game1 : Game
             _shotX += _shotXDelta;
             _shotY += _shotYDelta;
             
-             Rectangle monolithRect = new Rectangle(300, 300, 280, 24);
+            Rectangle monolithRect = new Rectangle(300, 300, 280, 24);
             Rectangle shotRect = new Rectangle((int)_shotX, (int)_shotY, 8, 8);
 
             if (shotRect.Intersects(monolithRect))
@@ -270,8 +274,9 @@ public class Game1 : Game
 
         // _spriteBatch.Draw(_image, new Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
         // _spriteBatch.Draw(_image, new Vector2(300, 100), sourceRectangle, Color.White);
-        _spriteBatch.Draw(_image, new Vector2(_posX, _posY), _sourceRectangles[_currentAnimationIndex], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
-        Console.WriteLine($"Drawing ship at angle {_translations[_currentAnimationIndex]} degrees at position {_posX},{_posY} with source rectangle {_sourceRectangles[_currentAnimationIndex]}");
+        _spriteBatch.Draw(_redShip, new Vector2(_redPosX, _redPosY), _sourceRectangles[_currentAnimationIndex], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
+        _spriteBatch.Draw(_blueShip, new Vector2(_bluePosX, _bluePosY), _sourceRectangles[0], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
+        Console.WriteLine($"Drawing ship at angle {_translations[_currentAnimationIndex]} degrees at position {_redPosX},{_redPosY} with source rectangle {_sourceRectangles[_currentAnimationIndex]}");
         _spriteBatch.End();
 
         base.Draw(gameTime);

@@ -1,3 +1,3 @@
 ﻿
-using var game = new StellarTriumph.Game1();
+using var game = new StellarTriumph.STMain();
 game.Run();
