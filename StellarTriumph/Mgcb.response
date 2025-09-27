@@ -2,6 +2,6 @@
 
 /build:ship_red.png
 /build:ship_blue.png
-/build:GameIcon.bmp
+/build:Icon.bmp
 
 /outputDir:./Content/
