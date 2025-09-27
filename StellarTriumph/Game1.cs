@@ -2,8 +2,15 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
+using MonoGame.Extended.Collisions;
+using MonoGame.Extended;
+using System.Xml;
+
 
 namespace StellarTriumph;
+
+
+
 
 
 public class STMain : Game
@@ -12,10 +19,11 @@ public class STMain : Game
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private Texture2D _redShip;
-    private Texture2D _blueShip;
     private Texture2D _explosion;
     private Texture2D _star;
+
     private Texture2D _shot;
+    private Texture2D _blueShip;
     private Texture2D _monolithLeft;
     private Texture2D _monolithRight;
     private Texture2D _monolithTop;
@@ -23,6 +31,7 @@ public class STMain : Game
     private double _rotation;
     private bool _starfieldInitialized = false;
     private bool _monolithHit = false;
+    private bool _inExplosion = false;
 
     private ushort _previousAnimationIndex;
     private ushort _currentAnimationIndex;
@@ -51,6 +60,14 @@ public class STMain : Game
     private float _redPosY = 100.0f;
     private float _bluePosX = 500.0f;
     private float _bluePosY = 100.0f;
+
+    int _currentExplosionFrameIndex = 0;
+    float _timePerExplosionFrame = 0.1f; // seconds
+    float _explosionElapsedTime = 0f;
+
+    Rectangle[] animationFrames = new Rectangle[16]; // Or a List<Rectangle>
+      
+
     public STMain()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -66,7 +83,6 @@ public class STMain : Game
         _starX = new int[150];
         _starY = new int[150];
         Window.Title = "Stellar Triumph";
-
     }
 
     protected override void LoadContent()
@@ -75,7 +91,6 @@ public class STMain : Game
 
         Console.WriteLine(GraphicsDevice.Viewport.Width);
         Console.WriteLine(GraphicsDevice.Viewport.Height);
-
 
         _redShip = Content.Load<Texture2D>("ship_red");
         _blueShip = Content.Load<Texture2D>("ship_blue");
@@ -87,6 +102,23 @@ public class STMain : Game
         _sourceRectangles = new Rectangle[24];
         _translations = new int[24];
         _previousAnimationIndex = 0;
+
+        animationFrames[0] = new Rectangle(0, 0, 64, 64);
+        animationFrames[1] = new Rectangle(64, 0, 64, 64);
+        animationFrames[2] = new Rectangle(128, 0, 64, 64);
+        animationFrames[3] = new Rectangle(192, 0, 64, 64);
+        animationFrames[4] = new Rectangle(0, 64, 64, 64);
+        animationFrames[5] = new Rectangle(64, 64, 64, 64);
+        animationFrames[6] = new Rectangle(128, 64, 64, 64);
+        animationFrames[7] = new Rectangle(192, 64, 64, 64);
+        animationFrames[8] = new Rectangle(0, 128, 64, 64);
+        animationFrames[9] = new Rectangle(64, 128, 64, 64);
+        animationFrames[10] = new Rectangle(128, 128, 64, 64);
+        animationFrames[11] = new Rectangle(192, 128, 64, 64);
+        animationFrames[12] = new Rectangle(0, 192, 64, 64);
+        animationFrames[13] = new Rectangle(64, 192, 64, 64);
+        animationFrames[14] = new Rectangle(128, 192, 64, 64);
+        animationFrames[15] = new Rectangle(192, 192, 64, 64);
 
         for (int y = 0; y < (SpriteDimension * 4); y += SpriteDimension)
         {
@@ -118,6 +150,8 @@ public class STMain : Game
                              Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
                              Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,Color.Red ,Color.Red,
                              Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red});
+
+
         _monolithTop = new Texture2D(GraphicsDevice, 160, 2);
         _monolithBottom = new Texture2D(GraphicsDevice, 160, 2);
         _monolithLeft = new Texture2D(GraphicsDevice, 2, 16);
@@ -137,7 +171,7 @@ public class STMain : Game
         _monolithLeft.SetData(monolithSideColorData);
         _monolithRight.SetData(monolithSideColorData);
     }
-    
+
 
     protected override void Update(GameTime gameTime)
     {
@@ -186,7 +220,7 @@ public class STMain : Game
             _redPosX += _inertialDeltaX;
             _redPosY += _inertialDeltaY * -1;
         }
-        
+
 
 
         if (Keyboard.GetState().IsKeyDown(Keys.Space))
@@ -212,6 +246,25 @@ public class STMain : Game
             _timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
         }
         */
+        if (_inExplosion)
+        {
+            if (_currentExplosionFrameIndex > animationFrames.Length)
+            {
+                _inExplosion = false;
+                _currentExplosionFrameIndex = 0;
+            }
+            else
+            {
+                _explosionElapsedTime += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                if (_explosionElapsedTime >= _timePerExplosionFrame)
+                {
+                    _currentExplosionFrameIndex++;
+
+                    _explosionElapsedTime -= _timePerExplosionFrame;
+                }
+            }
+        }
 
         base.Update(gameTime);
     }
@@ -226,7 +279,7 @@ public class STMain : Game
         _spriteBatch.Draw(_monolithBottom, new Rectangle(300, 300 + 24, 280, 1), Color.Gray);
         _spriteBatch.Draw(_monolithLeft, new Rectangle(300, 300, 1, 24), Color.Gray);
         _spriteBatch.Draw(_monolithRight, new Rectangle(300 + 280, 300, 1, 24), Color.Gray);
-        
+
         if (_shotFired)
         {
             _shotXDelta = (float)Math.Cos(_rotation) * 10 * _xCoefficient;
@@ -234,9 +287,10 @@ public class STMain : Game
 
             _shotX += _shotXDelta;
             _shotY += _shotYDelta;
-            
+
             Rectangle monolithRect = new Rectangle(300, 300, 280, 24);
             Rectangle shotRect = new Rectangle((int)_shotX, (int)_shotY, 8, 8);
+            Rectangle blueShipRect = new Rectangle((int)_bluePosX, (int)_bluePosY, SpriteDimension, SpriteDimension);
 
             if (shotRect.Intersects(monolithRect))
             {
@@ -250,7 +304,24 @@ public class STMain : Game
                 }
             }
 
-            _spriteBatch.Draw(_shot, new Vector2(_shotX, _shotY), Color.Red);
+            if (!shotRect.Intersects(blueShipRect))
+            {
+                _spriteBatch.Draw(_shot, new Vector2(_shotX, _shotY), Color.Red);
+                _spriteBatch.Draw(_blueShip, new Vector2(_bluePosX, _bluePosY), _sourceRectangles[0], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
+            }
+            else
+            {
+                _shotFired = false;
+                _monolithHit = false;
+                _shotX = 0;
+                _shotY = 0;
+                _xCoefficient = 1;
+                _yCoefficient = 1;
+                _inExplosion = true;
+                // _blueShip.Dispose();
+            }
+
+            
 
             if (_shotX < 0 || _shotX > GraphicsDevice.Viewport.Width || _shotY < 0 || _shotY > GraphicsDevice.Viewport.Height)
             {
@@ -263,7 +334,7 @@ public class STMain : Game
             }
         }
 
-    
+
 
         if (!_starfieldInitialized)
         {
@@ -302,7 +373,7 @@ public class STMain : Game
         {
             _redPosX = -SpriteDimension; // Wrap to left side
         }
-        else if (_redPosX +  SpriteDimension < 0)
+        else if (_redPosX + SpriteDimension < 0)
         {
             _redPosX = screenWidth; // Wrap to right side
         }
@@ -318,9 +389,17 @@ public class STMain : Game
         }
 
         _spriteBatch.Draw(_redShip, new Vector2(_redPosX, _redPosY), _sourceRectangles[_currentAnimationIndex], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
-        _spriteBatch.Draw(_blueShip, new Vector2(_bluePosX, _bluePosY), _sourceRectangles[0], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
-        Console.WriteLine($"Drawing ship at angle {_translations[_currentAnimationIndex]} degrees at position {_redPosX},{_redPosY} with source rectangle {_sourceRectangles[_currentAnimationIndex]}");
-        _spriteBatch.End();
+
+        if (!_inExplosion)
+        {
+            _spriteBatch.Draw(_blueShip, new Vector2(_bluePosX, _bluePosY), _sourceRectangles[0], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
+        }
+        else if (_currentExplosionFrameIndex <= 15)
+        {
+            _spriteBatch.Draw(_explosion, new Vector2(_bluePosX, _bluePosY), animationFrames[_currentExplosionFrameIndex], Color.White);
+        }
+        //Console.WriteLine($"Drawing ship at angle {_translations[_currentAnimationIndex]} degrees at position {_redPosX},{_redPosY} with source rectangle {_sourceRectangles[_currentAnimationIndex]}");
+            _spriteBatch.End();
 
         base.Draw(gameTime);
     }
