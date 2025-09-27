@@ -13,6 +13,7 @@ public class STMain : Game
     private SpriteBatch _spriteBatch;
     private Texture2D _redShip;
     private Texture2D _blueShip;
+    private Texture2D _explosion;
     private Texture2D _star;
     private Texture2D _shot;
     private Texture2D _monolithLeft;
@@ -50,7 +51,6 @@ public class STMain : Game
     private float _redPosY = 100.0f;
     private float _bluePosX = 500.0f;
     private float _bluePosY = 100.0f;
-
     public STMain()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -79,6 +79,7 @@ public class STMain : Game
 
         _redShip = Content.Load<Texture2D>("ship_red");
         _blueShip = Content.Load<Texture2D>("ship_blue");
+        _explosion = Content.Load<Texture2D>("Explosion");
         _timer = 0;
         _threshold = 250;
 
