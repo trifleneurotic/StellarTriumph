@@ -42,6 +42,9 @@ public class STMain : Game
     private const int AngleIncrement = 15;
     private float _timer;
     private int _threshold;
+    private float _inertial = 0.0F;
+    private float _inertialDeltaX;
+    private float _inertialDeltaY;
 
     private float _redPosX = 100.0f;
     private float _redPosY = 100.0f;
@@ -139,7 +142,6 @@ public class STMain : Game
         if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
             Exit();
 
-
         if (Keyboard.GetState().IsKeyDown(Keys.Left))
         {
             if (_previousAnimationIndex == 0)
@@ -151,8 +153,6 @@ public class STMain : Game
                 _currentAnimationIndex = (ushort)((_previousAnimationIndex - 1) % 23);
             }
             _previousAnimationIndex = _currentAnimationIndex;
-
-
         }
         else if (Keyboard.GetState().IsKeyDown(Keys.Right))
         {
@@ -166,22 +166,36 @@ public class STMain : Game
             float _posXDelta = (float)Math.Cos(radians);
             float _posYDelta = (float)Math.Sin(radians);
             _redPosX += _posXDelta;
-            _redPosY += (_posYDelta * -1);
+            _redPosY += _posYDelta * -1;
+            _inertialDeltaX = _posXDelta;
+            _inertialDeltaY = _posYDelta;
+            _inertial = 1.0F;
         }
         else
         {
             _timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
         }
 
+        if (Keyboard.GetState().IsKeyUp(Keys.Up) && _inertial > 0)
+        {
+            _inertial -= 0.001F;
+            _inertialDeltaX *= _inertial;
+            _inertialDeltaY *= _inertial;
+            _redPosX += _inertialDeltaX;
+            _redPosY += _inertialDeltaY * -1;
+        }
+        
+
+
         if (Keyboard.GetState().IsKeyDown(Keys.Space))
         {
             if (_shotFired) return;
-            
+
             _shotFired = true;
             _rotation = (Math.PI / 180.0) * _translations[_currentAnimationIndex];
             _shotX = _redPosX + SpriteDimension / 2;
             _shotY = _redPosY + SpriteDimension / 2;
-            
+
             Console.WriteLine($"Shot fired at angle {_translations[_currentAnimationIndex]} degrees");
         }
 
@@ -203,7 +217,7 @@ public class STMain : Game
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.Black);
-        _spriteBatch.Begin();
+        _spriteBatch.Begin(samplerState: SamplerState.PointWrap);
 
 
         _spriteBatch.Draw(_monolithTop, new Rectangle(300, 300, 280, 1), Color.Gray);
@@ -272,8 +286,35 @@ public class STMain : Game
 
         Rectangle sourceRectangle = new Rectangle(0, 0, 61, 61);
 
-        // _spriteBatch.Draw(_image, new Rectangle(0, 0, _graphics.PreferredBackBufferWidth, _graphics.PreferredBackBufferHeight), Color.White);
-        // _spriteBatch.Draw(_image, new Vector2(300, 100), sourceRectangle, Color.White);
+
+        /* _redPosX = MathHelper.Clamp(_redPosX, 0, GraphicsDevice.Viewport.Width - SpriteDimension);
+        _redPosY = MathHelper.Clamp(_redPosY, 0, GraphicsDevice.Viewport.Height- SpriteDimension);
+        */
+        // clamping
+
+        int screenWidth = GraphicsDevice.Viewport.Width;
+        int screenHeight = GraphicsDevice.Viewport.Height;
+
+        // Horizontal wrapping
+        if (_redPosX > screenWidth)
+        {
+            _redPosX = -SpriteDimension; // Wrap to left side
+        }
+        else if (_redPosX +  SpriteDimension < 0)
+        {
+            _redPosX = screenWidth; // Wrap to right side
+        }
+
+        // Vertical wrapping
+        if (_redPosY > screenHeight)
+        {
+            _redPosY = -SpriteDimension; // Wrap to top side
+        }
+        else if (_redPosY + SpriteDimension < 0)
+        {
+            _redPosY = screenHeight; // Wrap to bottom side
+        }
+
         _spriteBatch.Draw(_redShip, new Vector2(_redPosX, _redPosY), _sourceRectangles[_currentAnimationIndex], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
         _spriteBatch.Draw(_blueShip, new Vector2(_bluePosX, _bluePosY), _sourceRectangles[0], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
         Console.WriteLine($"Drawing ship at angle {_translations[_currentAnimationIndex]} degrees at position {_redPosX},{_redPosY} with source rectangle {_sourceRectangles[_currentAnimationIndex]}");
