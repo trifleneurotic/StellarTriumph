@@ -16,12 +16,16 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Icon.ico" />
-    <None Remove="Icon.bmp" />
+    <None Remove="GameIcon.ico" />
+    <None Remove="GameIcon.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Icon.ico" />
-    <EmbeddedResource Include="Icon.bmp" />
+    <EmbeddedResource Include="Icon.bmp">
+    <LogicalName>Icon.bmp</LogicalName>
+  </EmbeddedResource>
+  <EmbeddedResource Include="Icon.ico">
+    <LogicalName>Icon.ico</LogicalName>
+  </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MonoGame.Extended" Version="3.8.0" />

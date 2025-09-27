@@ -56,7 +56,6 @@ public class STMain : Game
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = true;
-
     }
 
     protected override void Initialize()
@@ -66,6 +65,8 @@ public class STMain : Game
         base.Initialize();
         _starX = new int[150];
         _starY = new int[150];
+        Window.Title = "Stellar Triumph";
+
     }
 
     protected override void LoadContent()
