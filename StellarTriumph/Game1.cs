@@ -23,18 +23,24 @@ public class STMain : Game
     private Texture2D _star;
 
     private Texture2D _shot;
+    private Texture2D _shotBlue;
     private Texture2D _blueShip;
     private Texture2D _monolithLeft;
     private Texture2D _monolithRight;
     private Texture2D _monolithTop;
     private Texture2D _monolithBottom;
     private double _rotation;
+    private double _rotationBlue;
     private bool _starfieldInitialized = false;
     private bool _monolithHit = false;
     private bool _inExplosion = false;
+    private bool _inExplosionRed = false;
 
     private ushort _previousAnimationIndex;
     private ushort _currentAnimationIndex;
+
+    private ushort _previousAnimationIndexBlue;
+    private ushort _currentAnimationIndexBlue;
 
     private Rectangle[] _sourceRectangles;
     private int[] _translations;
@@ -42,19 +48,36 @@ public class STMain : Game
     private int[] _starY;
     private float _shotX;
     private float _shotY;
+    private float _shotXBlue;
+    private float _shotYBlue;
     private float _shotXDelta;
     private float _shotYDelta;
+
+    private float _shotXDeltaBlue;
+    private float _shotYDeltaBlue;
     private int _xCoefficient = 1;
     private int _yCoefficient = 1;
+
+    private int _xCoefficientBlue = 1;
+    private int _yCoefficientBlue = 1;
     private bool _shotFired = false;
+    private bool _shotFiredBlue = false;
     private const int SpriteDimension = 61;
     private const int CircleDegrees = 360;
     private const int AngleIncrement = 15;
     private float _timer;
     private int _threshold;
+    private int _fuel = 1024;
+    private int _fuelBlue = 1024;
+    private int _shots = 16;
+    private int _shotsBlue = 16;
     private float _inertial = 0.0F;
+    private float _inertialBlue = 0.0F;
     private float _inertialDeltaX;
     private float _inertialDeltaY;
+
+    private float _inertialDeltaXBlue;
+    private float _inertialDeltaYBlue;
 
     private float _redPosX = 100.0f;
     private float _redPosY = 100.0f;
@@ -66,6 +89,16 @@ public class STMain : Game
     float _explosionElapsedTime = 0f;
 
     Rectangle[] animationFrames = new Rectangle[16]; // Or a List<Rectangle>
+
+     // The Sprite Font reference to draw with
+    SpriteFont font1;
+
+    // The position to draw the text
+    Vector2 fontPos;
+    Vector2 fontPos2;
+
+    Vector2 fontPos3;
+    Vector2 fontPos4;
       
 
     public STMain()
@@ -150,6 +183,15 @@ public class STMain : Game
                              Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
                              Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,Color.Red ,Color.Red,
                              Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red});
+        _shotBlue = new Texture2D(GraphicsDevice, 8, 8);
+        _shotBlue.SetData(new[] { Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
+                             Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
+                             Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
+                             Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
+                             Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
+                             Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,
+                             Color.Red, Color.Red, Color.Red, Color.Red, Color.Red, Color.Red,Color.Red ,Color.Red,
+                             Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red ,Color.Red});
 
 
         _monolithTop = new Texture2D(GraphicsDevice, 160, 2);
@@ -170,6 +212,16 @@ public class STMain : Game
         }
         _monolithLeft.SetData(monolithSideColorData);
         _monolithRight.SetData(monolithSideColorData);
+
+        _spriteBatch = new SpriteBatch(GraphicsDevice);
+        font1 = Content.Load<SpriteFont>("MyMenuFont");
+        Viewport viewport = _graphics.GraphicsDevice.Viewport;
+
+        // TODO: Load your game content here            
+        fontPos = new Vector2(30, 30);
+        fontPos2 = new Vector2(30, 60);
+        fontPos3 = new Vector2(300, 30);
+        fontPos4 = new Vector2(300, 60);
     }
 
 
@@ -197,15 +249,23 @@ public class STMain : Game
         }
         else if (Keyboard.GetState().IsKeyDown(Keys.Up))
         {
-            // Console.WriteLine(_translations[_currentAnimationIndex]);
-            double radians = (Math.PI / 180.0) * _translations[_currentAnimationIndex];
-            float _posXDelta = (float)Math.Cos(radians);
-            float _posYDelta = (float)Math.Sin(radians);
-            _redPosX += _posXDelta;
-            _redPosY += _posYDelta * -1;
-            _inertialDeltaX = _posXDelta;
-            _inertialDeltaY = _posYDelta;
-            _inertial = 1.0F;
+            if (_fuel > 0)
+            {
+                // Console.WriteLine(_translations[_currentAnimationIndex]);
+                double radians = (Math.PI / 180.0) * _translations[_currentAnimationIndex];
+                float _posXDelta = (float)Math.Cos(radians);
+                float _posYDelta = (float)Math.Sin(radians);
+                _redPosX += _posXDelta;
+                _redPosY += _posYDelta * -1;
+                _inertialDeltaX = _posXDelta;
+                _inertialDeltaY = _posYDelta;
+                _inertial = 1.0F;
+
+                if (gameTime.ElapsedGameTime.Seconds % 8 == 0)
+                {
+                    _fuel -= 1;
+                }
+            }
         }
         else
         {
@@ -214,7 +274,8 @@ public class STMain : Game
 
         if (Keyboard.GetState().IsKeyUp(Keys.Up) && _inertial > 0)
         {
-            _inertial -= 0.001F;
+            Console.WriteLine(_inertial);
+            //_inertial -= 0.001F;
             _inertialDeltaX *= _inertial;
             _inertialDeltaY *= _inertial;
             _redPosX += _inertialDeltaX;
@@ -225,7 +286,7 @@ public class STMain : Game
 
         if (Keyboard.GetState().IsKeyDown(Keys.Space))
         {
-            if (_shotFired) return;
+            if (_shotFired || _shots == 0) return;
 
             _shotFired = true;
             _rotation = (Math.PI / 180.0) * _translations[_currentAnimationIndex];
@@ -233,6 +294,74 @@ public class STMain : Game
             _shotY = _redPosY + SpriteDimension / 2;
 
             Console.WriteLine($"Shot fired at angle {_translations[_currentAnimationIndex]} degrees");
+            _shots--;
+        }
+
+        if (Keyboard.GetState().IsKeyDown(Keys.A))
+        {
+            if (_previousAnimationIndexBlue == 0)
+            {
+                _currentAnimationIndexBlue = 23;
+            }
+            else
+            {
+                _currentAnimationIndexBlue = (ushort)((_previousAnimationIndexBlue - 1) % 23);
+            }
+            _previousAnimationIndexBlue = _currentAnimationIndexBlue;
+        }
+        else if (Keyboard.GetState().IsKeyDown(Keys.D))
+        {
+            _currentAnimationIndexBlue = (ushort)((_previousAnimationIndexBlue + 1) % 23);
+            _previousAnimationIndexBlue = _currentAnimationIndexBlue;
+        }
+        else if (Keyboard.GetState().IsKeyDown(Keys.W))
+        {
+            if (_fuelBlue > 0)
+            {
+                // Console.WriteLine(_translations[_currentAnimationIndex]);
+                double radians = (Math.PI / 180.0) * _translations[_currentAnimationIndexBlue];
+                float _posXDelta = (float)Math.Cos(radians);
+                float _posYDelta = (float)Math.Sin(radians);
+                _bluePosX += _posXDelta;
+                _bluePosY += _posYDelta * -1;
+                _inertialDeltaXBlue = _posXDelta;
+                _inertialDeltaYBlue = _posYDelta;
+                _inertialBlue = 1.0F;
+
+                if (gameTime.ElapsedGameTime.Seconds % 8 == 0)
+                {
+                    _fuelBlue -= 1;
+                }
+            }
+        }
+        else
+        {
+            _timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+        }
+
+        if (Keyboard.GetState().IsKeyUp(Keys.W) && _inertialBlue > 0)
+        {
+            Console.WriteLine(_inertialBlue);
+            //_inertialBlue -= 0.001F;
+            _inertialDeltaXBlue *= _inertialBlue;
+            _inertialDeltaYBlue *= _inertialBlue;
+            _bluePosX += _inertialDeltaXBlue;
+            _bluePosY += _inertialDeltaYBlue * -1;
+        }
+
+
+
+        if (Keyboard.GetState().IsKeyDown(Keys.R))
+        {
+            if (_shotFiredBlue || _shotsBlue == 0) return;
+
+            _shotFiredBlue = true;
+            _rotationBlue = (Math.PI / 180.0) * _translations[_currentAnimationIndexBlue];
+            _shotXBlue = _bluePosX + SpriteDimension / 2;
+            _shotYBlue = _bluePosY + SpriteDimension / 2;
+
+            Console.WriteLine($"Blue shot fired at angle {_translations[_currentAnimationIndexBlue]} degrees");
+            _shotsBlue--;
         }
 
         /* if (_timer > _threshold)
@@ -246,11 +375,12 @@ public class STMain : Game
             _timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
         }
         */
-        if (_inExplosion)
+        if (_inExplosion || _inExplosionRed)
         {
             if (_currentExplosionFrameIndex > animationFrames.Length)
             {
-                _inExplosion = false;
+                if (_inExplosion) _inExplosion = false;
+                if (_inExplosionRed) _inExplosionRed = false;
                 _currentExplosionFrameIndex = 0;
             }
             else
@@ -273,6 +403,28 @@ public class STMain : Game
     {
         GraphicsDevice.Clear(Color.Black);
         _spriteBatch.Begin(samplerState: SamplerState.PointWrap);
+
+        string output = _fuel.ToString();
+        string output2 = _shots.ToString();
+        string output3 = _fuelBlue.ToString();
+        string output4 = _shotsBlue.ToString();
+
+        Vector2 FontOrigin = font1.MeasureString(output) / 2;
+        _spriteBatch.DrawString(font1, output, fontPos, Color.LightGreen,
+        0, FontOrigin, 1.0f, SpriteEffects.None, 0.5f);
+
+        Vector2 FontOrigin2 = font1.MeasureString(output2) / 2;
+        _spriteBatch.DrawString(font1, output2, fontPos2, Color.OrangeRed,
+        0, FontOrigin2, 1.0f, SpriteEffects.None, 0.5f);
+
+        Vector2 FontOrigin3 = font1.MeasureString(output3) / 2;
+        _spriteBatch.DrawString(font1, output3, fontPos3, Color.LightGreen,
+        0, FontOrigin3, 1.0f, SpriteEffects.None, 0.5f);
+
+        Vector2 FontOrigin4 = font1.MeasureString(output4) / 2;
+        _spriteBatch.DrawString(font1, output4, fontPos4, Color.OrangeRed,
+        0, FontOrigin4, 1.0f, SpriteEffects.None, 0.5f);
+
 
 
         _spriteBatch.Draw(_monolithTop, new Rectangle(300, 300, 280, 1), Color.Gray);
@@ -307,7 +459,7 @@ public class STMain : Game
             if (!shotRect.Intersects(blueShipRect))
             {
                 _spriteBatch.Draw(_shot, new Vector2(_shotX, _shotY), Color.Red);
-                _spriteBatch.Draw(_blueShip, new Vector2(_bluePosX, _bluePosY), _sourceRectangles[0], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
+                //_spriteBatch.Draw(_blueShip, new Vector2(_bluePosX, _bluePosY), _sourceRectangles[0], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
             }
             else
             {
@@ -331,6 +483,60 @@ public class STMain : Game
                 _shotY = 0;
                 _xCoefficient = 1;
                 _yCoefficient = 1;
+            }
+        }
+
+        if (_shotFiredBlue)
+        {
+            _shotXDeltaBlue = (float)Math.Cos(_rotationBlue) * 10 * _xCoefficientBlue;
+            _shotYDeltaBlue = (float)Math.Sin(_rotationBlue) * -10 * _yCoefficientBlue;
+
+            _shotXBlue += _shotXDeltaBlue;
+            _shotYBlue += _shotYDeltaBlue;
+
+            Rectangle monolithRect = new Rectangle(300, 300, 280, 24);
+            Rectangle shotRect = new Rectangle((int)_shotXBlue, (int)_shotYBlue, 8, 8);
+            Rectangle redShipRect = new Rectangle((int)_redPosX, (int)_redPosY, SpriteDimension, SpriteDimension);
+
+            if (shotRect.Intersects(monolithRect))
+            {
+                if (shotRect.Intersects(new Rectangle(300, 300, 280, 1)) || shotRect.Intersects(new Rectangle(300, 300 + 24, 280, 1)))
+                {
+                    _yCoefficientBlue *= -1;
+                }
+                if (shotRect.Intersects(new Rectangle(300, 300, 1, 24)) || shotRect.Intersects(new Rectangle(300 + 280, 300, 1, 24)))
+                {
+                    _xCoefficientBlue *= -1;
+                }
+            }
+
+            if (!shotRect.Intersects(redShipRect))
+            {
+                _spriteBatch.Draw(_shot, new Vector2(_shotXBlue, _shotYBlue), Color.Red);
+                //_spriteBatch.Draw(_redShip, new Vector2(_redPosX, _redPosY), _sourceRectangles[0], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
+            }
+            else
+            {
+                _shotFiredBlue = false;
+                _monolithHit = false;
+                _shotXBlue = 0;
+                _shotYBlue = 0;
+                _xCoefficientBlue = 1;
+                _yCoefficientBlue = 1;
+                _inExplosionRed = true;
+                // _blueShip.Dispose();
+            }
+
+            
+
+            if (_shotXBlue < 0 || _shotXBlue > GraphicsDevice.Viewport.Width || _shotYBlue < 0 || _shotYBlue > GraphicsDevice.Viewport.Height)
+            {
+                _shotFiredBlue = false;
+                _monolithHit = false;
+                _shotXBlue = 0;
+                _shotYBlue = 0;
+                _xCoefficientBlue = 1;
+                _yCoefficientBlue = 1;
             }
         }
 
@@ -388,15 +594,42 @@ public class STMain : Game
             _redPosY = screenHeight; // Wrap to bottom side
         }
 
-        _spriteBatch.Draw(_redShip, new Vector2(_redPosX, _redPosY), _sourceRectangles[_currentAnimationIndex], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
+        // Horizontal wrapping
+        if (_bluePosX > screenWidth)
+        {
+            _bluePosX = -SpriteDimension; // Wrap to left side
+        }
+        else if (_bluePosX + SpriteDimension < 0)
+        {
+            _bluePosX = screenWidth; // Wrap to right side
+        }
+
+        // Vertical wrapping
+        if (_bluePosY > screenHeight)
+        {
+            _bluePosY = -SpriteDimension; // Wrap to top side
+        }
+        else if (_bluePosY + SpriteDimension < 0)
+        {
+            _bluePosY = screenHeight; // Wrap to bottom side
+        }
 
         if (!_inExplosion)
         {
-            _spriteBatch.Draw(_blueShip, new Vector2(_bluePosX, _bluePosY), _sourceRectangles[0], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
+            _spriteBatch.Draw(_blueShip, new Vector2(_bluePosX, _bluePosY), _sourceRectangles[_currentAnimationIndexBlue], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
         }
         else if (_currentExplosionFrameIndex <= 15)
         {
             _spriteBatch.Draw(_explosion, new Vector2(_bluePosX, _bluePosY), animationFrames[_currentExplosionFrameIndex], Color.White);
+        }
+
+        if (!_inExplosionRed)
+        {
+            _spriteBatch.Draw(_redShip, new Vector2(_redPosX, _redPosY), _sourceRectangles[_currentAnimationIndex], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
+        }
+        else if (_currentExplosionFrameIndex <= 15)
+        {
+            _spriteBatch.Draw(_explosion, new Vector2(_redPosX, _redPosY), animationFrames[_currentExplosionFrameIndex], Color.White);
         }
         //Console.WriteLine($"Drawing ship at angle {_translations[_currentAnimationIndex]} degrees at position {_redPosX},{_redPosY} with source rectangle {_sourceRectangles[_currentAnimationIndex]}");
             _spriteBatch.End();
