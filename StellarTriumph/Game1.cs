@@ -232,45 +232,66 @@ public class STMain : Game
 
         if (Keyboard.GetState().IsKeyDown(Keys.Left))
         {
-            if (_previousAnimationIndex == 0)
+            if (gameTime.TotalGameTime.Milliseconds % 50 == 0)
             {
-                _currentAnimationIndex = 23;
-            }
-            else
-            {
-                _currentAnimationIndex = (ushort)((_previousAnimationIndex - 1) % 23);
-            }
-            _previousAnimationIndex = _currentAnimationIndex;
-        }
-        else if (Keyboard.GetState().IsKeyDown(Keys.Right))
-        {
-            _currentAnimationIndex = (ushort)((_previousAnimationIndex + 1) % 23);
-            _previousAnimationIndex = _currentAnimationIndex;
-        }
-        else if (Keyboard.GetState().IsKeyDown(Keys.Up))
-        {
-            if (_fuel > 0)
-            {
-                // Console.WriteLine(_translations[_currentAnimationIndex]);
-                double radians = (Math.PI / 180.0) * _translations[_currentAnimationIndex];
-                float _posXDelta = (float)Math.Cos(radians);
-                float _posYDelta = (float)Math.Sin(radians);
-                _redPosX += _posXDelta;
-                _redPosY += _posYDelta * -1;
-                _inertialDeltaX = _posXDelta;
-                _inertialDeltaY = _posYDelta;
-                _inertial = 1.0F;
 
-                if (gameTime.ElapsedGameTime.Seconds % 8 == 0)
+                if (_previousAnimationIndex == 0)
                 {
-                    _fuel -= 1;
+                    _currentAnimationIndex = 23;
+                }
+                else
+                {
+                    _currentAnimationIndex = (ushort)((_previousAnimationIndex - 1) % 23);
+                }
+                _previousAnimationIndex = _currentAnimationIndex;
+                if (Keyboard.GetState().IsKeyDown(Keys.Up))
+                {
+                    _inertialDeltaX *= _inertial;
+                    _inertialDeltaY *= _inertial;
+                    _redPosX += _inertialDeltaX * 4;
+                    _redPosY += (_inertialDeltaY * -1) * 4;                    
                 }
             }
         }
-        else
-        {
-            _timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-        }
+            else if (Keyboard.GetState().IsKeyDown(Keys.Right))
+            {
+            if (gameTime.TotalGameTime.Milliseconds % 50 == 0)
+            {
+                _currentAnimationIndex = (ushort)((_previousAnimationIndex + 1) % 23);
+                _previousAnimationIndex = _currentAnimationIndex;
+                    if (Keyboard.GetState().IsKeyDown(Keys.Up))
+                {
+                    _inertialDeltaX *= _inertial;
+                    _inertialDeltaY *= _inertial;
+                    _redPosX += _inertialDeltaX * 4;
+                    _redPosY += (_inertialDeltaY * -1) * 4;                    
+                }
+                }
+            }
+            else if (Keyboard.GetState().IsKeyDown(Keys.Up))
+            {
+                if (_fuel > 0)
+                {
+                    // Console.WriteLine(_translations[_currentAnimationIndex]);
+                    double radians = (Math.PI / 180.0) * _translations[_currentAnimationIndex];
+                    float _posXDelta = (float)Math.Cos(radians);
+                    float _posYDelta = (float)Math.Sin(radians);
+                    _redPosX += _posXDelta * 2;
+                    _redPosY += (_posYDelta * -1) * 2;
+                    _inertialDeltaX = _posXDelta;
+                    _inertialDeltaY = _posYDelta;
+                    _inertial = 1.0F;
+
+                    if (gameTime.ElapsedGameTime.Seconds % 8 == 0)
+                    {
+                        _fuel -= 1;
+                    }
+                }
+            }
+            else
+            {
+                _timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            }
 
         if (Keyboard.GetState().IsKeyUp(Keys.Up) && _inertial > 0)
         {
@@ -278,8 +299,8 @@ public class STMain : Game
             //_inertial -= 0.001F;
             _inertialDeltaX *= _inertial;
             _inertialDeltaY *= _inertial;
-            _redPosX += _inertialDeltaX;
-            _redPosY += _inertialDeltaY * -1;
+            _redPosX += _inertialDeltaX * 2;
+            _redPosY += (_inertialDeltaY * -1) * 2;
         }
 
 
@@ -299,45 +320,65 @@ public class STMain : Game
 
         if (Keyboard.GetState().IsKeyDown(Keys.A))
         {
-            if (_previousAnimationIndexBlue == 0)
+            if (gameTime.TotalGameTime.Milliseconds % 50 == 0)
             {
-                _currentAnimationIndexBlue = 23;
-            }
-            else
-            {
-                _currentAnimationIndexBlue = (ushort)((_previousAnimationIndexBlue - 1) % 23);
-            }
-            _previousAnimationIndexBlue = _currentAnimationIndexBlue;
-        }
-        else if (Keyboard.GetState().IsKeyDown(Keys.D))
-        {
-            _currentAnimationIndexBlue = (ushort)((_previousAnimationIndexBlue + 1) % 23);
-            _previousAnimationIndexBlue = _currentAnimationIndexBlue;
-        }
-        else if (Keyboard.GetState().IsKeyDown(Keys.W))
-        {
-            if (_fuelBlue > 0)
-            {
-                // Console.WriteLine(_translations[_currentAnimationIndex]);
-                double radians = (Math.PI / 180.0) * _translations[_currentAnimationIndexBlue];
-                float _posXDelta = (float)Math.Cos(radians);
-                float _posYDelta = (float)Math.Sin(radians);
-                _bluePosX += _posXDelta;
-                _bluePosY += _posYDelta * -1;
-                _inertialDeltaXBlue = _posXDelta;
-                _inertialDeltaYBlue = _posYDelta;
-                _inertialBlue = 1.0F;
-
-                if (gameTime.ElapsedGameTime.Seconds % 8 == 0)
+                if (_previousAnimationIndexBlue == 0)
                 {
-                    _fuelBlue -= 1;
+                    _currentAnimationIndexBlue = 23;
+                }
+                else
+                {
+                    _currentAnimationIndexBlue = (ushort)((_previousAnimationIndexBlue - 1) % 23);
+                }
+                _previousAnimationIndexBlue = _currentAnimationIndexBlue;
+                if (Keyboard.GetState().IsKeyDown(Keys.W))
+                {
+                    _inertialDeltaXBlue *= _inertialBlue;
+                    _inertialDeltaYBlue *= _inertialBlue;
+                    _bluePosX += _inertialDeltaXBlue * 4;
+                    _bluePosY += (_inertialDeltaYBlue * -1) * 4;                    
                 }
             }
         }
-        else
-        {
-            _timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-        }
+            else if (Keyboard.GetState().IsKeyDown(Keys.D))
+            {
+            if (gameTime.TotalGameTime.Milliseconds % 50 == 0)
+            {
+                _currentAnimationIndexBlue = (ushort)((_previousAnimationIndexBlue + 1) % 23);
+                _previousAnimationIndexBlue = _currentAnimationIndexBlue;
+                if (Keyboard.GetState().IsKeyDown(Keys.W))
+                {
+                    _inertialDeltaXBlue *= _inertialBlue;
+                    _inertialDeltaYBlue *= _inertialBlue;
+                    _bluePosX += _inertialDeltaXBlue * 4;
+                    _bluePosY += (_inertialDeltaYBlue * -1) * 4;                    
+                }
+               }
+            }
+            else if (Keyboard.GetState().IsKeyDown(Keys.W))
+            {
+                if (_fuelBlue > 0)
+                {
+                    // Console.WriteLine(_translations[_currentAnimationIndex]);
+                    double radians = (Math.PI / 180.0) * _translations[_currentAnimationIndexBlue];
+                    float _posXDelta = (float)Math.Cos(radians);
+                    float _posYDelta = (float)Math.Sin(radians);
+                    _bluePosX += _posXDelta * 2;
+                    _bluePosY += (_posYDelta * -1) * 2;
+                    _inertialDeltaXBlue = _posXDelta;
+                    _inertialDeltaYBlue = _posYDelta;
+                    _inertialBlue = 1.0F;
+
+                    if (gameTime.ElapsedGameTime.Seconds % 8 == 0)
+                    {
+                        _fuelBlue -= 1;
+                    }
+                }
+            }
+            else
+            {
+                _timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            }
 
         if (Keyboard.GetState().IsKeyUp(Keys.W) && _inertialBlue > 0)
         {
@@ -345,8 +386,8 @@ public class STMain : Game
             //_inertialBlue -= 0.001F;
             _inertialDeltaXBlue *= _inertialBlue;
             _inertialDeltaYBlue *= _inertialBlue;
-            _bluePosX += _inertialDeltaXBlue;
-            _bluePosY += _inertialDeltaYBlue * -1;
+            _bluePosX += _inertialDeltaXBlue * 2;
+            _bluePosY += (_inertialDeltaYBlue * -1) * 2;
         }
 
 
