@@ -9,6 +9,7 @@ using Myra;
 using Myra.Graphics2D.UI;
 using Myra.Graphics2D.TextureAtlases;
 using Myra.Graphics2D;
+using Microsoft.Xna.Framework.Audio;
 
 
 namespace StellarTriumph;
@@ -66,6 +67,7 @@ public class STMain : Game
     private int _xCoefficient = 1;
     private int _yCoefficient = 1;
 
+    private SoundEffect _explosionSound;
     private int _xCoefficientBlue = 1;
     private int _yCoefficientBlue = 1;
     private bool _shotFired = false;
@@ -153,7 +155,7 @@ public class STMain : Game
         var toggle = new Label
         {
             Id = "toggle",
-            Text = "Toggles",
+            Text = "Toggles:",
 
         };
         toggle.HorizontalAlignment = HorizontalAlignment.Right;
@@ -247,6 +249,8 @@ public class STMain : Game
         grid.Widgets.Add(button2);
 
         _redShipStatic = Content.Load<Texture2D>("ship_red_static");
+
+        _explosionSound = Content.Load<SoundEffect>("Boom1");
 
         var image = new Myra.Graphics2D.UI.Image();
         image.Renderable = new Myra.Graphics2D.TextureAtlases.TextureRegion(_redShipStatic);
@@ -822,6 +826,8 @@ public class STMain : Game
                 else if (_currentExplosionFrameIndex <= 15)
                 {
                     _spriteBatch.Draw(_explosion, new Vector2(_bluePosX, _bluePosY), animationFrames[_currentExplosionFrameIndex], Color.White);
+                    if(_currentExplosionFrameIndex == 0)
+                        _explosionSound.Play();
                 }
 
                 if (!_inExplosionRed)
@@ -831,6 +837,8 @@ public class STMain : Game
                 else if (_currentExplosionFrameIndex <= 15)
                 {
                     _spriteBatch.Draw(_explosion, new Vector2(_redPosX, _redPosY), animationFrames[_currentExplosionFrameIndex], Color.White);
+                    if(_currentExplosionFrameIndex == 0)
+                        _explosionSound.Play();
                 }
                 //Console.WriteLine($"Drawing ship at angle {_translations[_currentAnimationIndex]} degrees at position {_redPosX},{_redPosY} with source rectangle {_sourceRectangles[_currentAnimationIndex]}");
                     _spriteBatch.End();
