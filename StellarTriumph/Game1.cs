@@ -7,6 +7,8 @@ using MonoGame.Extended;
 using System.Xml;
 using Myra;
 using Myra.Graphics2D.UI;
+using Myra.Graphics2D.TextureAtlases;
+using Myra.Graphics2D;
 
 
 namespace StellarTriumph;
@@ -24,6 +26,7 @@ public class STMain : Game
     private GraphicsDeviceManager _graphics;
     private SpriteBatch _spriteBatch;
     private Texture2D _redShip;
+    private Texture2D _redShipStatic;
     private Texture2D _explosion;
     private Texture2D _star;
 
@@ -141,17 +144,21 @@ public class STMain : Game
         var helloWorld = new Label
         {
             Id = "label",
-            Text = "Stellar Triumph"
+            Text = "Stellar Triumph!",
         };
         grid.Widgets.Add(helloWorld);
+        Grid.SetColumn(helloWorld, 4);
+        Grid.SetRow(helloWorld, 1);
 
         var toggle = new Label
         {
             Id = "toggle",
-            Text = "Toggles"
+            Text = "Toggles",
+
         };
-        Grid.SetColumn(toggle, 0);
-        Grid.SetRow(toggle, 2);       
+        toggle.HorizontalAlignment = HorizontalAlignment.Right;
+        Grid.SetColumn(toggle, 1);
+        Grid.SetRow(toggle, 3);       
         grid.Widgets.Add(toggle);
 
         var monolithToggle = new ToggleButton
@@ -163,8 +170,8 @@ public class STMain : Game
 		Text = "Monolith"
 	}
         };
-        Grid.SetColumn(monolithToggle, 1);
-        Grid.SetRow(monolithToggle, 2);
+        Grid.SetColumn(monolithToggle, 3);
+        Grid.SetRow(monolithToggle, 3);
         grid.Widgets.Add(monolithToggle);
 
           var inertiaToggle = new ToggleButton
@@ -176,9 +183,35 @@ public class STMain : Game
 		Text = "Inertia"
 	}
         };
-        Grid.SetColumn(inertiaToggle, 2);
-        Grid.SetRow(inertiaToggle, 2);
+        Grid.SetColumn(inertiaToggle, 4);
+        Grid.SetRow(inertiaToggle, 3);
         grid.Widgets.Add(inertiaToggle);
+
+        var alienToggle = new ToggleButton
+        {
+            Content = new Label
+	{
+		HorizontalAlignment = HorizontalAlignment.Center,
+		VerticalAlignment = VerticalAlignment.Center,
+		Text = "Alien"
+	}
+        };
+        Grid.SetColumn(alienToggle, 5);
+        Grid.SetRow(alienToggle, 3);
+        grid.Widgets.Add(alienToggle);
+
+        var sunToggle = new ToggleButton
+        {
+            Content = new Label
+	{
+		HorizontalAlignment = HorizontalAlignment.Center,
+		VerticalAlignment = VerticalAlignment.Center,
+		Text = "Sun"
+	}
+        };
+        Grid.SetColumn(sunToggle, 6);
+        Grid.SetRow(sunToggle, 3);
+        grid.Widgets.Add(sunToggle);
 
         var button = new Button
         {
@@ -187,8 +220,8 @@ public class STMain : Game
                 Text = "Start Game"
             }
         };
-        Grid.SetColumn(button, 0);
-        Grid.SetRow(button, 1);
+        Grid.SetColumn(button, 3);
+        Grid.SetRow(button, 4);
 
         button.Click += (s, a) =>
         {
@@ -202,8 +235,8 @@ public class STMain : Game
                 Text = "Quit"
             }
         };
-        Grid.SetColumn(button2, 1);
-        Grid.SetRow(button2, 1);
+        Grid.SetColumn(button2, 5);
+        Grid.SetRow(button2, 4);
 
         button2.Click += (s, a) =>
         {
@@ -212,7 +245,15 @@ public class STMain : Game
 
         grid.Widgets.Add(button);
         grid.Widgets.Add(button2);
-        
+
+        _redShipStatic = Content.Load<Texture2D>("ship_red_static");
+
+        var image = new Myra.Graphics2D.UI.Image();
+        image.Renderable = new Myra.Graphics2D.TextureAtlases.TextureRegion(_redShipStatic);
+        Grid.SetColumn(image, 2);
+        Grid.SetRow(image, 5);
+        grid.Widgets.Add(image);
+
         _desktop = new Desktop();
         _desktop.Root = grid;
 
