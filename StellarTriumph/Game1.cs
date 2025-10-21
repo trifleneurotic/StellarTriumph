@@ -68,6 +68,7 @@ public class STMain : Game
     private int _yCoefficient = 1;
 
     private SoundEffect _explosionSound;
+    private SoundEffect _shootSound;
     private int _xCoefficientBlue = 1;
     private int _yCoefficientBlue = 1;
     private bool _shotFired = false;
@@ -251,6 +252,7 @@ public class STMain : Game
         _redShipStatic = Content.Load<Texture2D>("ship_red_static");
 
         _explosionSound = Content.Load<SoundEffect>("Boom3");
+        _shootSound = Content.Load<SoundEffect>("Shoot3");
 
         var image = new Myra.Graphics2D.UI.Image();
         image.Renderable = new Myra.Graphics2D.TextureAtlases.TextureRegion(_redShipStatic);
@@ -455,6 +457,7 @@ public class STMain : Game
                 {
                     if (_shotFired || _shots == 0) return;
 
+                    _shootSound.Play();
                     _shotFired = true;
                     _rotation = (Math.PI / 180.0) * _translations[_currentAnimationIndex];
                     _shotX = _redPosX + SpriteDimension / 2;
@@ -542,6 +545,7 @@ public class STMain : Game
                 {
                     if (_shotFiredBlue || _shotsBlue == 0) return;
 
+                    _shootSound.Play();
                     _shotFiredBlue = true;
                     _rotationBlue = (Math.PI / 180.0) * _translations[_currentAnimationIndexBlue];
                     _shotXBlue = _bluePosX + SpriteDimension / 2;

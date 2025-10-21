@@ -92,3 +92,9 @@
 /processorParam:TextureFormat=Color
 /build:ship_red.png
 
+#begin Shoot3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Shoot3.wav
+
