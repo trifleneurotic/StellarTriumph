@@ -19,6 +19,12 @@
 /processorParam:Quality=Best
 /build:Boom1.wav
 
+#begin Boom3.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Boom3.wav
+
 #begin Explosion.png
 /importer:TextureImporter
 /processor:TextureProcessor

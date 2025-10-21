@@ -250,7 +250,7 @@ public class STMain : Game
 
         _redShipStatic = Content.Load<Texture2D>("ship_red_static");
 
-        _explosionSound = Content.Load<SoundEffect>("Boom1");
+        _explosionSound = Content.Load<SoundEffect>("Boom3");
 
         var image = new Myra.Graphics2D.UI.Image();
         image.Renderable = new Myra.Graphics2D.TextureAtlases.TextureRegion(_redShipStatic);
@@ -466,8 +466,8 @@ public class STMain : Game
 
                 if (Keyboard.GetState().IsKeyDown(Keys.A))
                 {
-                    if (gameTime.TotalGameTime.Milliseconds % 50 == 0)
-                    {
+                    //if (gameTime.TotalGameTime.Milliseconds % 50 == 0)
+                    
                         if (_previousAnimationIndexBlue == 0)
                         {
                             _currentAnimationIndexBlue = 23;
@@ -484,11 +484,11 @@ public class STMain : Game
                             _bluePosX += _inertialDeltaXBlue * 4;
                             _bluePosY += (_inertialDeltaYBlue * -1) * 4;                    
                         }
-                    }
+                    
                 }
                     else if (Keyboard.GetState().IsKeyDown(Keys.D))
-                    {
-                    if (gameTime.TotalGameTime.Milliseconds % 50 == 0)
+                    
+                    //if (gameTime.TotalGameTime.Milliseconds % 50 == 0)
                     {
                         _currentAnimationIndexBlue = (ushort)((_previousAnimationIndexBlue + 1) % 23);
                         _previousAnimationIndexBlue = _currentAnimationIndexBlue;
@@ -500,7 +500,7 @@ public class STMain : Game
                             _bluePosY += (_inertialDeltaYBlue * -1) * 4;                    
                         }
                     }
-                    }
+                    
                     else if (Keyboard.GetState().IsKeyDown(Keys.W))
                     {
                         if (_fuelBlue > 0)
