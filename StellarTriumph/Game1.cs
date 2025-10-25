@@ -30,6 +30,7 @@ public class STMain : Game
     private Texture2D _redShipStatic;
     private Texture2D _explosion;
     private Texture2D _star;
+    private Texture2D _sun;
 
     private Texture2D _shot;
     private Texture2D _shotBlue;
@@ -50,6 +51,9 @@ public class STMain : Game
 
     private ushort _previousAnimationIndexBlue;
     private ushort _currentAnimationIndexBlue;
+
+    private ushort _previousAnimationIndexSun;
+    private ushort _currentAnimationIndexSun;
 
     private Rectangle[] _sourceRectangles;
     private int[] _translations;
@@ -100,6 +104,7 @@ public class STMain : Game
     float _explosionElapsedTime = 0f;
 
     Rectangle[] animationFrames = new Rectangle[16]; // Or a List<Rectangle>
+    Rectangle[] sunFrames = new Rectangle[20];
 
     // The Sprite Font reference to draw with
     SpriteFont font1;
@@ -271,6 +276,7 @@ public class STMain : Game
         _redShip = Content.Load<Texture2D>("ship_red");
         _blueShip = Content.Load<Texture2D>("ship_blue");
         _explosion = Content.Load<Texture2D>("Explosion");
+        _sun = Content.Load<Texture2D>("Sun");
         _timer = 0;
         _threshold = 250;
 
@@ -295,6 +301,27 @@ public class STMain : Game
         animationFrames[13] = new Rectangle(64, 192, 64, 64);
         animationFrames[14] = new Rectangle(128, 192, 64, 64);
         animationFrames[15] = new Rectangle(192, 192, 64, 64);
+
+        sunFrames[0] = new Rectangle(0, 0, 35, 35);
+        sunFrames[1] = new Rectangle(35, 0, 35, 35);
+        sunFrames[2] = new Rectangle(70, 0, 35, 35);
+        sunFrames[3] = new Rectangle(105, 0, 35, 35);
+        sunFrames[4] = new Rectangle(0, 35, 35, 35);
+        sunFrames[5] = new Rectangle(35, 35, 35, 35);
+        sunFrames[6] = new Rectangle(70, 35, 35, 35);
+        sunFrames[7] = new Rectangle(105, 35, 35, 35);
+        sunFrames[8] = new Rectangle(0, 70, 35, 35);
+        sunFrames[9] = new Rectangle(35, 70, 35, 35);
+        sunFrames[10] = new Rectangle(70, 70, 35, 35);
+        sunFrames[11] = new Rectangle(105, 70, 35, 35);
+        sunFrames[12] = new Rectangle(0, 105, 35, 35);
+        sunFrames[13] = new Rectangle(35, 105, 35, 35);
+        sunFrames[14] = new Rectangle(70, 105, 35, 35);
+        sunFrames[15] = new Rectangle(105, 105, 35, 35);
+        sunFrames[16] = new Rectangle(0, 140, 35, 35);
+        sunFrames[17] = new Rectangle(35, 140, 35, 35);
+        sunFrames[18] = new Rectangle(70, 140, 35, 35);
+        sunFrames[19] = new Rectangle(105, 140, 35, 35);
 
         for (int y = 0; y < (SpriteDimension * 4); y += SpriteDimension)
         {
@@ -339,8 +366,8 @@ public class STMain : Game
 
         _monolithTop = new Texture2D(GraphicsDevice, 160, 2);
         _monolithBottom = new Texture2D(GraphicsDevice, 160, 2);
-        _monolithLeft = new Texture2D(GraphicsDevice, 2, 16);
-        _monolithRight = new Texture2D(GraphicsDevice, 2, 16);
+        _monolithLeft = new Texture2D(GraphicsDevice, 2, 8);
+        _monolithRight = new Texture2D(GraphicsDevice, 2, 8);
         Color[] monolithColorData = new Color[160 * 2];
         for (int i = 0; i < monolithColorData.Length; i++)
         {
@@ -348,7 +375,7 @@ public class STMain : Game
         }
         _monolithTop.SetData(monolithColorData);
         _monolithBottom.SetData(monolithColorData);
-        Color[] monolithSideColorData = new Color[2 * 16];
+        Color[] monolithSideColorData = new Color[2 * 8];
         for (int i = 0; i < monolithSideColorData.Length; i++)
         {
             monolithSideColorData[i] = Color.Gray;
@@ -587,6 +614,20 @@ public class STMain : Game
                     }
                 }
 
+                if (gameTime.TotalGameTime.Milliseconds % 100 == 0)
+                {     
+                    if (_currentAnimationIndexSun == 19)
+                    {
+                        _currentAnimationIndexSun = 0;
+                    }
+                    else
+                    {
+                        _currentAnimationIndexSun++;
+                    }
+                }
+
+                
+
                 base.Update(gameTime);
                 break;
             case GameState.Paused:
@@ -636,10 +677,53 @@ public class STMain : Game
 
 
 
-                _spriteBatch.Draw(_monolithTop, new Rectangle(300, 300, 280, 1), Color.Gray);
-                _spriteBatch.Draw(_monolithBottom, new Rectangle(300, 300 + 24, 280, 1), Color.Gray);
-                _spriteBatch.Draw(_monolithLeft, new Rectangle(300, 300, 1, 24), Color.Gray);
-                _spriteBatch.Draw(_monolithRight, new Rectangle(300 + 280, 300, 1, 24), Color.Gray);
+                _spriteBatch.Draw(_monolithTop, new Rectangle(400, 400, 160, 2), Color.Gray);
+                _spriteBatch.Draw(_monolithBottom, new Rectangle(400, 400 + 8, 160, 2), Color.Gray);
+                _spriteBatch.Draw(_monolithLeft, new Rectangle(400, 400, 2, 8), Color.Gray);
+                _spriteBatch.Draw(_monolithRight, new Rectangle(400 + 160, 400, 2, 8), Color.Gray);
+
+                Rectangle blueShipRect = new Rectangle((int)_bluePosX, (int)_bluePosY, SpriteDimension, SpriteDimension);
+                Rectangle redShipRect = new Rectangle((int)_redPosX, (int)_redPosY, SpriteDimension, SpriteDimension);
+
+                Rectangle sunRect = new Rectangle(400, 200, 35, 35);
+                if (blueShipRect.Intersects(sunRect))
+                {
+                    _inExplosion = true;
+                    _shotFired = false;
+                    _monolithHit = false;
+                    _shotX = 0;
+                    _shotY = 0;
+                    _xCoefficient = 1;
+                    _yCoefficient = 1;
+                }
+
+                if (blueShipRect.Intersects(redShipRect))
+                {
+                    _inExplosion = true;
+                    _inExplosionRed = true;
+                    _shotFired = false;
+                    _shotFiredBlue = false;
+                    _monolithHit = false;
+                    _shotX = 0;
+                    _shotY = 0;
+                    _shotXBlue = 0;
+                    _shotYBlue = 0;
+                    _xCoefficient = 1;
+                    _yCoefficient = 1;
+                    _xCoefficientBlue = 1;
+                    _yCoefficientBlue = 1;
+                }
+                
+                if(redShipRect.Intersects(sunRect))
+                {
+                    _inExplosionRed = true;
+                    _shotFired = false;
+                        _monolithHit = false;
+                        _shotX = 0;
+                        _shotY = 0;
+                        _xCoefficient = 1;
+                        _yCoefficient = 1;
+                }
 
                 if (_shotFired)
                 {
@@ -649,17 +733,17 @@ public class STMain : Game
                     _shotX += _shotXDelta;
                     _shotY += _shotYDelta;
 
-                    Rectangle monolithRect = new Rectangle(300, 300, 280, 24);
+                    Rectangle monolithRect = new Rectangle(400, 400, 280, 24);
                     Rectangle shotRect = new Rectangle((int)_shotX, (int)_shotY, 8, 8);
-                    Rectangle blueShipRect = new Rectangle((int)_bluePosX, (int)_bluePosY, SpriteDimension, SpriteDimension);
+                    
 
                     if (shotRect.Intersects(monolithRect))
                     {
-                        if (shotRect.Intersects(new Rectangle(300, 300, 280, 1)) || shotRect.Intersects(new Rectangle(300, 300 + 24, 280, 1)))
+                        if (shotRect.Intersects(new Rectangle(400, 400, 280, 1)) || shotRect.Intersects(new Rectangle(400, 400 + 24, 280, 1)))
                         {
                             _yCoefficient *= -1;
                         }
-                        if (shotRect.Intersects(new Rectangle(300, 300, 1, 24)) || shotRect.Intersects(new Rectangle(300 + 280, 300, 1, 24)))
+                        if (shotRect.Intersects(new Rectangle(400, 400, 1, 24)) || shotRect.Intersects(new Rectangle(400 + 280, 400, 1, 24)))
                         {
                             _xCoefficient *= -1;
                         }
@@ -703,21 +787,21 @@ public class STMain : Game
                     _shotXBlue += _shotXDeltaBlue;
                     _shotYBlue += _shotYDeltaBlue;
 
-                    Rectangle monolithRect = new Rectangle(300, 300, 280, 24);
+                    Rectangle monolithRect = new Rectangle(400, 400, 280, 24);
                     Rectangle shotRect = new Rectangle((int)_shotXBlue, (int)_shotYBlue, 8, 8);
-                    Rectangle redShipRect = new Rectangle((int)_redPosX, (int)_redPosY, SpriteDimension, SpriteDimension);
 
                     if (shotRect.Intersects(monolithRect))
                     {
-                        if (shotRect.Intersects(new Rectangle(300, 300, 280, 1)) || shotRect.Intersects(new Rectangle(300, 300 + 24, 280, 1)))
+                        if (shotRect.Intersects(new Rectangle(400, 400, 280, 1)) || shotRect.Intersects(new Rectangle(400, 400 + 24, 280, 1)))
                         {
                             _yCoefficientBlue *= -1;
                         }
-                        if (shotRect.Intersects(new Rectangle(300, 300, 1, 24)) || shotRect.Intersects(new Rectangle(300 + 280, 300, 1, 24)))
+                        if (shotRect.Intersects(new Rectangle(400, 400, 1, 24)) || shotRect.Intersects(new Rectangle(400 + 280, 400, 1, 24)))
                         {
                             _xCoefficientBlue *= -1;
                         }
                     }
+
 
                     if (!shotRect.Intersects(redShipRect))
                     {
@@ -822,6 +906,8 @@ public class STMain : Game
                 {
                     _bluePosY = screenHeight; // Wrap to bottom side
                 }
+
+                _spriteBatch.Draw(_sun, new Vector2(400, 200), sunFrames[_currentAnimationIndexSun], Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0.9f);
 
                 if (!_inExplosion)
                 {
