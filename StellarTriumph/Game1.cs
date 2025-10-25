@@ -686,6 +686,36 @@ public class STMain : Game
                 Rectangle redShipRect = new Rectangle((int)_redPosX, (int)_redPosY, SpriteDimension, SpriteDimension);
 
                 Rectangle sunRect = new Rectangle(400, 200, 35, 35);
+                Rectangle gravityRect = new Rectangle(347, 147, 140, 140);
+
+                if (blueShipRect.Intersects(gravityRect))
+                {
+                    //double angleToSun = Math.Atan2((300 - (_bluePosY + SpriteDimension / 2)), (417 - (_bluePosX + SpriteDimension / 2)));
+                    //float gravityX = (float)(Math.Cos(angleToSun) * 0.5);
+                    //float gravityY = (float)(Math.Sin(angleToSun) * 0.5);
+                    //_bluePosX += gravityX;
+                    //_bluePosY += gravityY;
+                    _inertialDeltaXBlue *= _inertialBlue;
+                    _inertialDeltaYBlue *= _inertialBlue;
+                    _bluePosX += _inertialDeltaXBlue * 2;
+                    _bluePosY += (_inertialDeltaYBlue * -1) * 2;
+                    _inertialBlue += .0000001F;
+                }
+
+                if (redShipRect.Intersects(gravityRect))
+                {
+                    //double angleToSun = Math.Atan2((300 - (_redPosY + SpriteDimension / 2)), (417 - (_redPosX + SpriteDimension / 2)));
+                    //float gravityX = (float)(Math.Cos(angleToSun) * 0.5);
+                    //float gravityY = (float)(Math.Sin(angleToSun) * 0.5);
+                    //_redPosX += gravityX;
+                    //_redPosY += gravityY;
+                    _inertialDeltaX *= _inertial;
+                    _inertialDeltaY *= _inertial;
+                    _redPosX += _inertialDeltaX * 2;
+                    _redPosY += (_inertialDeltaY * -1) * 2;
+                    _inertial += .0000001F;
+                }
+
                 if (blueShipRect.Intersects(sunRect))
                 {
                     _inExplosion = true;
